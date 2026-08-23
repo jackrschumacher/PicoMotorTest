@@ -1,19 +1,19 @@
 #include <Arduino.h>
 #include <Servo.h>
 // put function declarations here:
-// This program currently is for servos only- DC motors need to be implemented
 
-double defaultAngle = 0.0; //Default value for angle
+// ! This program currently only supports the turning of one motor at a time
+Servo servo;
+const int defaultAngle = 0;    //Default value for angle
+const int stepDelayMs = 15;    //Time given to the servo to reach each step
 
-Servo servo1;
-Servo servo2;
-Servo servo3;
+int currentAngle = defaultAngle; //Angle the servo is currently holding
 
 void setup()
 {
   Serial.begin(9600); // Begin broadcasting over serial on a baud rate of 9600
 
-  // TODO: Change these pins to match hardware
+  // TODO: Change pins to match hardware
 
   // Set up pins for digital input and output- for help refer to the "Resources" folder for the schematic
   // Using pins 1-6 for servo output.
@@ -34,28 +34,20 @@ void setup()
   pinMode(40, OUTPUT); // Output to Libre
 
   servo.attach(1); //Attach the servo on port 1 to the servo library
-  servo.attach(2); //Attach the servo on port 1 to the servo library
-  servo.attach(3); //Attach the servo on port 1 to the servo library
   servo.write(defaultAngle); //Set servo to the default position before executing any commands in the loop
 }
 
 void loop()
 {
-  desiredAngle1 = random(1,180);
-  desiredAngle2 = random(1,180);
-  desiredAngle3 = random(1,180);
-  for(defaultAngle; defaultAngle < desiredAngle1; defaultAngle++){
-      servo1.write(desiredAngle1);
-      Serial.write("Current angle: ", defaultAngle);
-  }
-  for(defaultAngle; defaultAngle < desiredAngle2; defaultAngle++){
-      servo1.write(desiredAngle2);
-      Serial.write("Current angle: ", defaultAngle);
-  }
-  for(defaultAngle; defaultAngle < desiredAngle3; defaultAngle++){
-      servo1.write(desiredAngle3);
-      Serial.write("Current angle: ", defaultAngle);
-  }
+  int desiredAngle = 180;
+  int step = (desiredAngle < currentAngle) ? -1 : 1; //Sweep in whichever direction the target lies
 
+  while(currentAngle != desiredAngle){
+      currentAngle += step;
+      servo.write(currentAngle); //Step one degree at a time so the motion is a sweep, not a jump
+      Serial.print("Current angle: ");
+      Serial.println(currentAngle);
+      delay(stepDelayMs);
+  }
 }
 
